@@ -36,6 +36,7 @@ fn main() {
 fn day_to_problem(day: usize) -> Option<Box<dyn Problem>> {
     match day {
         0 => Some(Box::new(DayZero{})),
+        1 => Some(Box::new(DayOne{})),
         _ => None
     }
 }

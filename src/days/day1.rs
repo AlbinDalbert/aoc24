@@ -15,15 +15,11 @@ impl Problem for DayOne {
         list_1.sort();
         list_2.sort();
 
-        let mut diff_list: Vec<u32> = Vec::new();
-
-        for i in 0..list_1.len() {
-            let dif = list_1.index(i).abs_diff(*list_2.index(i));
-            diff_list.push(dif);
-        }
-        
-        let total: u32 = diff_list.into_iter().sum();
-        total.to_string()
+        list_1.iter()
+            .zip(list_2.iter())
+            .map(|(a, b)| a.abs_diff(*b))
+            .sum::<u32>()
+            .to_string()
     }
 
     fn part_two(&self) -> String {
@@ -34,7 +30,7 @@ impl Problem for DayOne {
         list_1.sort();
         list_2.sort();
 
-        let mut sim_list: Vec<u32> = Vec::new();
+        let mut sim_list: Vec<u32> = Vec::with_capacity(list_1.len());
 
         let mut frequency_table: HashMap<i32, i32> = HashMap::new();
 

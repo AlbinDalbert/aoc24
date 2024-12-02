@@ -1,4 +1,4 @@
-use std::{env, process::exit, usize};
+use std::{env, process::exit, time::Instant, usize};
 
 use days::*;
 mod days;
@@ -22,7 +22,7 @@ fn main() {
     }
 
     let prob = prob_wrp.unwrap();
-
+    let start = Instant::now();
     match part {
         1 => println!("{}", prob.part_one()),
         2 => println!("{}", prob.part_two()),
@@ -31,12 +31,15 @@ fn main() {
             println!("part 2:\n{}\n----",prob.part_two());
         }
     }
+    let speed = start.elapsed();
+    println!("time: {:?}", speed);
 }
 
 fn day_to_problem(day: usize) -> Option<Box<dyn Problem>> {
     match day {
         0 => Some(Box::new(DayZero{})),
         1 => Some(Box::new(DayOne{})),
+        2 => Some(Box::new(DayTwo{})),
         _ => None
     }
 }

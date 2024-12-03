@@ -1,5 +1,3 @@
-use std::iter::Enumerate;
-
 use crate::Problem;
 use crate::get_input;
 

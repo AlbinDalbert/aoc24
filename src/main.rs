@@ -1,4 +1,4 @@
-use std::{env, process::exit, time::Instant, usize};
+use std::{any::Any, env, process::exit, time::Instant, usize};
 
 use days::*;
 mod days;
@@ -20,8 +20,14 @@ fn main() {
         println!("Day don't exists");
         exit(-1);
     }
+    
+    let prob: Box<dyn Problem> = prob_wrp.unwrap();
+    
+    if let Some(_) = prob.as_day_zero() {
+        println!("Solution not yet implemented");
+        exit(-1);
+    }
 
-    let prob = prob_wrp.unwrap();
     let start = Instant::now();
     match part {
         1 => println!("{}", prob.part_one()),
@@ -37,18 +43,21 @@ fn main() {
 
 fn day_to_problem(day: usize) -> Option<Box<dyn Problem>> {
     match day {
-        0 => Some(Box::new(DayZero{})),
         1 => Some(Box::new(DayOne{})),
         2 => Some(Box::new(DayTwo{})),
         3 => Some(Box::new(DayThree{})),
+        4..26 => Some(Box::new(DayZero{})),
         _ => None
     }
 }
 
 
-pub trait Problem {
+pub trait Problem: Any {
     fn part_one(&self) -> String;
     fn part_two(&self) -> String;
+    fn as_day_zero(&self) -> Option<&DayZero> {
+        None
+    }
 }
 
 fn get_input(day: usize) -> String {

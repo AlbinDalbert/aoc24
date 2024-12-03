@@ -2,4 +2,4 @@
 
 ## Usage
 
-``cargo run <day> [part]``
+``cargo run <day: 0..25> [part: 1|2]``

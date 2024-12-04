@@ -97,38 +97,35 @@ fn search_dir(x: i32, y: i32, word: &Vec<char>, input: &Vec<Vec<char>>, dir: (i3
 fn is_x_mas(x: usize, y: usize, word1: &Vec<char>,word2: &Vec<char>, input: &Vec<Vec<char>>) -> u32 {
     let x= x as i32;
     let y = y as i32;
-    let directions = [
-        (-1, -1), (1, -1),  
-        (-1,  1), (1,  1)   
-    ];
+    
+    let dir = (-1,-1);
 
-    for dir in directions {
-
-        if check_diagnonal_mas(x, y, word1, word2, input, dir) {
-            let (x_dir,y_dir) = dir;
-            
-            if check_diagnonal_mas(x, y, word1, word2, input, (-x_dir, y_dir)) {
-                return 1;
-            }
-            return 0;
+    if check_diagonal_x(x, y, word1, word2, input, dir) {
+        let (x_dir,y_dir) = dir;
+        
+        if check_diagonal_x(x, y, word1, word2, input, (-x_dir, y_dir)) {
+            return 1;
         }
+        return 0;
     }
-
     0
 }
 
-fn check_diagnonal_mas(x: i32, y: i32, word1: &Vec<char>, word2: &Vec<char>, input: &Vec<Vec<char>>, dir: (i32,i32)) -> bool {
+fn check_diagonal_x(x: i32, y: i32, word1: &Vec<char>, word2: &Vec<char>, input: &Vec<Vec<char>>, dir: (i32,i32)) -> bool {
+    
     if search_dir(x, y, word1, input, dir) == 1 {
         let (x_dir,y_dir) = dir;
         if search_dir(x, y, word2, input, (-x_dir, -y_dir)) == 1 {
             return true;
         }
+        return false;
     }
 
     let (x_dir,y_dir) = dir;
     let dir = (-x_dir, -y_dir);
 
     if search_dir(x, y, word1, input, dir) == 1 {
+        
         let (x_dir,y_dir) = dir;
         if search_dir(x, y, word2, input, (-x_dir, -y_dir)) == 1 {
             return true;

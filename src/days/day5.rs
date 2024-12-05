@@ -1,132 +1,164 @@
-use std::collections::HashMap;
-use std::collections::VecDeque;
-use std::result;
+use std::mem::swap;
 
 use crate::Problem;
 use crate::get_input;
 
-/// the swap when missmatch occures causes the problem probably. caues other rules to be borken.
-/// 
-
 pub struct DayFive{}
 
 impl Problem for DayFive {
+
     fn part_one(&self) -> String {
-        let mut solution = 0;
-        
+
         let input_str = get_input(5);
 
         let lines: Vec<&str> = input_str.lines().collect();
 
         let input1 = &lines[0..1177];
-        let input2 = &lines[1178..]; // Start after the empty line
+        let input2_str = &lines[1177..]; 
 
-        let rules = set_rules(input1);
-        println!("num of rules: {}", rules.forward.len());
+        let input2_wrp: Result<Vec<Vec<i32>>, std::num::ParseIntError> = input2_str
+        .iter()
+        .map(|s| {
+            s.split(',')
+                .map(|num| num.trim().parse::<i32>()) // Parse each number
+                .collect() 
+        })
+        .collect();
+        let input2: Vec<Vec<i32>> = input2_wrp.unwrap();
+        
+        let rules = parse_rules(input1);
 
-        let mut updates = input2.into_iter()
-            .map(|li| li.split(',')
-                .map(|s| {
-                    s.parse::<i32>().unwrap()
-                }).collect::<VecDeque<i32>>())
-            .collect::<Vec<VecDeque<i32>>>();
-
-        let mut changed: Vec<usize> = Vec::new();
-        for _ in 0..100 {
-
-            for upd in 0..updates.len() {
-                for page in 0..updates[upd].len() {
-                    if let Some((value, boll)) = rules.look_up(updates[upd][page]) 
-                    {   
-                        for val in value {
-
-                            if updates[upd].contains(val) {
-                                let val_index = updates[upd].iter().position(|&x| x == *val).unwrap();
-                                if page > val_index && boll {
-                                    
-                                    // println!("Swap \t{} to the front in \t {:?}", updates[upd][page], updates[upd]);
-
-                                    updates[upd].rotate_left(page);
-
-                                    if !changed.contains(&upd) {
-                                        changed.push(upd);
-                                    }
-                                    break;
-                                }
-                                if page < val_index && !boll {
-                                    // println!("Swap \t{} to the back in \t {:?}", updates[upd][page], updates[upd]);
-                                    
-                                    updates[upd].rotate_right(page);
-                                    
-                                    if !changed.contains(&upd) {
-                                        changed.push(upd);
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
+        let mut valid_updates: Vec<Vec<i32>> = Vec::new();
+        for row in input2 {
+            if rules.check_row(row.clone()) {
+                valid_updates.push(row);
             }
         }
-        // println!("{updates:?}");
-        solution = 0;
-        for row in changed {
-            println!("{:?}", updates[row]);
-            solution += updates[row][updates[row].len() / 2];
+
+        let mut solution = 0;
+        
+        for row in valid_updates {
+            solution += row[row.len() / 2];
         }
 
         solution.to_string()
     }
 
     fn part_two(&self) -> String {
-        get_input(5);
+        let input_str = get_input(5);
+
+        let lines: Vec<&str> = input_str.lines().collect();
+
+        let input1 = &lines[0..1177];
+        let input2_str = &lines[1177..];
+
+        let input2_wrp: Result<Vec<Vec<i32>>, std::num::ParseIntError> = input2_str
+        .iter()
+        .map(|s| {
+            s.split(',')
+                .map(|num| num.trim().parse::<i32>()) // Parse each number
+                .collect() 
+        })
+        .collect();
+        let input2: Vec<Vec<i32>> = input2_wrp.unwrap();
         
+        let rules = parse_rules(input1);
+
+        let mut invalid_updates: Vec<Vec<i32>> = Vec::new();
+        for row in input2 {
+            if !rules.check_row(row.clone()) {
+                invalid_updates.push(row);
+            }
+        }
+
+        for _ in 0..100 {
+
+            let mut swaps = 0;
+            for line in 0..invalid_updates.len() {
+                
+                for index in 0..invalid_updates[line].len() {
+                    let should_after_nums = rules.get_rules(invalid_updates[line][index]);
+                    for rul in should_after_nums {
+                        if let Some(after_index) = invalid_updates[line].iter().position(|&x| x == rul) {
+                            
+                            if after_index < index {
+
+                                invalid_updates[line].swap(index, after_index);
+                                swaps += 1;
+                            }
+                        }
+                    }
+                    
+                }
+                
+            }
+            if swaps == 0 {break};
+        }
+            
         let mut solution = 0;
 
+        for row in invalid_updates {
+            solution += row[row.len() / 2];
+        }
+        
 
         solution.to_string()
     }
 }
 
-struct RuleMap {
-    forward: HashMap<i32, Vec<i32>>,
-    backward: HashMap<i32, Vec<i32>>,
+struct Rule {
+    before: i32,
+    after: i32,
 }
 
-impl RuleMap {
+struct Rules {
+    rules: Vec<Rule>,
+}
+
+impl Rules {
     fn new() -> Self {
-        RuleMap {
-            forward: HashMap::new(),
-            backward: HashMap::new(),
-        }
+        Rules { rules: Vec::new() }
     }
 
-    fn add_new_rule(&mut self, x: i32, y: i32) {
-        self.forward.entry(x).or_default().push(y);
-        self.backward.entry(y).or_default().push(x);
+    fn add_rule(&mut self, before: i32, after: i32) {
+        
+        self.rules.push(Rule { before, after });
     }
 
-    fn look_up(&self, val: i32) -> Option<(&Vec<i32>, bool)> {
-        if let Some(right) = self.forward.get(&val) {
-            Some((right, true))
-        } else if let Some(left) = self.backward.get(&val) {
-            Some((left, false))
-        } else {
-            None
+    fn check_row(&self, row: Vec<i32>) -> bool {
+        for rule in &self.rules {
+            // Only check if both numbers exist in the row
+            if let (Some(pos_before), Some(pos_after)) = (
+                row.iter().position(|&x| x == rule.before),
+                row.iter().position(|&x| x == rule.after)
+            ) {
+                if pos_after < pos_before {
+                    return false;
+                }
+            }
         }
+        true
+    }
+
+    fn get_rules(&self, key: i32) -> Vec<i32> {
+        self.rules
+        .iter()
+        .filter(|rule| rule.before == key)
+        .map(|rule| rule.after)
+        .collect()
     }
 }
 
-fn set_rules(raw: &[&str]) -> RuleMap {
-    let mut rules = RuleMap::new();
-    let result = raw.into_iter()
-        .filter_map(|s| {
-            s.split_once("|")
-        })
-        .for_each(|(left, right)| {
-            rules.add_new_rule(left.parse().unwrap(), right.parse().unwrap());
-        });
-    
+fn parse_rules(input: &[&str]) -> Rules {
+    let mut rules = Rules::new();
+    for line in input {
+        if let Some((before, after)) = line.split_once('|') {
+            
+            rules.add_rule(
+                before.trim().parse().unwrap(),
+                after.trim().parse().unwrap()
+            );
+        }
+    }
     rules
 }

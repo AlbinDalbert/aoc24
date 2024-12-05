@@ -9,12 +9,20 @@ impl Problem for DayZero {
     }
 
     fn part_one(&self) -> String {
-        get_input(0)
-        // todo!()
+        get_input(0);
+
+        let mut solution = 0;
+        
+
+        solution.to_string()
     }
 
     fn part_two(&self) -> String {
-        get_input(0)
-        // todo!()
+        get_input(0);
+        
+        let mut solution = 0;
+
+
+        solution.to_string()
     }
 }

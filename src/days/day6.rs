@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::Problem;
 use crate::get_input;
 
@@ -21,9 +23,7 @@ impl Problem for DaySix {
              }
         }
 
-        let mut solution = 0;
-
-        solution = map.tiles.iter()
+        let solution = map.tiles.iter()
             .flatten()
             .filter(|&state| matches!(state, MapState::Visited(_)))
             .count();
@@ -35,7 +35,7 @@ impl Problem for DaySix {
         let input_str = get_input(6);
         let lines: Vec<&str> = input_str.lines().collect();
 
-        let map = get_map_from_lines(lines);
+        let mut map = get_map_from_lines(lines);
 
         let solution = map.find_loops();
 
@@ -135,34 +135,55 @@ impl Map {
         self.position = (next_x, next_y);
     }
 
-    fn find_loops(&self) -> i32 {
+    fn find_loops(&mut self) -> i32 {
         let mut result = 0;
         
-        // Try each free position
-        for y in 0..self.tiles.len() {
-            for x in 0..self.tiles[0].len() {
-                if self.tiles[y][x] == MapState::Free {
-                    let mut mod_map = self.clone();
-                    mod_map.tiles[y][x] = MapState::Block;
+        let path: Vec<(usize, usize)> = (*self.get_path()).to_vec();
 
-                    while mod_map.in_bounds {
-                        match mod_map.get_state_in_front() {
-                            Some(MapState::Visited(dir)) if dir == mod_map.direction => {
-                                result += 1;
-                                break;
-                            },
-                            None => mod_map.in_bounds = false,
-                            Some(MapState::Block) => mod_map.direction.rotate_right(),
-                            _ => mod_map.step_forward(),
-                        }
+        for (x,y) in path {
+            if self.tiles[y][x] == MapState::Free {
+                let mut mod_map = self.clone();
+                mod_map.tiles[y][x] = MapState::Block;
+
+                while mod_map.in_bounds {
+                    match mod_map.get_state_in_front() {
+                        Some(MapState::Visited(dir)) if dir == mod_map.direction => {
+                            result += 1;
+                            break;
+                        },
+                        None => mod_map.in_bounds = false,
+                        Some(MapState::Block) => mod_map.direction.rotate_right(),
+                        _ => mod_map.step_forward(),
                     }
                 }
             }
         }
-        
+
         result
     }
 
+    fn get_path(&self) -> Vec<(usize, usize)> {
+        let mut result = Vec::new();
+        let mut temp_map = self.clone();
+
+        while temp_map.in_bounds {
+            match temp_map.get_state_in_front() {
+                None => temp_map.in_bounds = false,
+                Some(MapState::Block) => temp_map.direction.rotate_right(),
+                _ => {
+                    
+                    temp_map.step_forward()
+                },
+            }
+            result.push(temp_map.position.clone());
+        }
+
+        result.sort();
+        result.dedup();
+        result
+    }
+    
+    
 }
 
 #[derive(Copy, Clone)]

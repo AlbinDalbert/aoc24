@@ -10,3 +10,5 @@ pub mod day4;
 pub use day4::DayFour;
 pub mod day5; 
 pub use day5::DayFive;
+pub mod day6; 
+pub use day6::DaySix;

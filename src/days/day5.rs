@@ -1,5 +1,3 @@
-use std::mem::swap;
-
 use crate::Problem;
 use crate::get_input;
 
@@ -17,12 +15,12 @@ impl Problem for DayFive {
         let input2_str = &lines[1177..]; 
 
         let input2_wrp: Result<Vec<Vec<i32>>, std::num::ParseIntError> = input2_str
-        .iter()
-        .map(|s| {
-            s.split(',')
+            .iter()
+            .map(|s| {
+                s.split(',')
                 .map(|num| num.trim().parse::<i32>()) // Parse each number
                 .collect() 
-        })
+            })
         .collect();
         let input2: Vec<Vec<i32>> = input2_wrp.unwrap();
         

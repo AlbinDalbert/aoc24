@@ -49,6 +49,7 @@ fn day_to_problem(day: usize) -> Option<Box<dyn Problem>> {
         4 => Some(Box::new(DayFour{})),
         5 => Some(Box::new(DayFive{})),
         6 => Some(Box::new(DaySix{})),
+        7 => Some(Box::new(DaySeven{})),
         1..26 => Some(Box::new(DayZero{})),
         _ => None
     }

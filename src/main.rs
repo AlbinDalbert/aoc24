@@ -50,6 +50,7 @@ fn day_to_problem(day: usize) -> Option<Box<dyn Problem>> {
         5 => Some(Box::new(DayFive{})),
         6 => Some(Box::new(DaySix{})),
         7 => Some(Box::new(DaySeven{})),
+        8 => Some(Box::new(DayEight{})),
         1..26 => Some(Box::new(DayZero{})),
         _ => None
     }
@@ -67,4 +68,16 @@ pub trait Problem: Any {
 fn get_input(day: usize) -> String {
     std::fs::read_to_string(format!("input/day{}.md", day))
         .expect("Could not read input file")
+}
+
+trait ToGrid {
+    fn to_grid(&self) -> Vec<Vec<char>>;
+}
+
+impl ToGrid for String {
+    fn to_grid(&self) -> Vec<Vec<char>> {
+        self.lines()
+            .map(|line| line.chars().collect())
+            .collect()
+    }
 }
